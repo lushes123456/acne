@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acne Studios - 自定义图案定制</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f9f7f3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .page-title {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 1px solid #999;
+            border-radius: 50%;
+        }
+
+        .search-icon::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            bottom: -6px;
+            width: 10px;
+            height: 2px;
+            background-color: #999;
+            transform: rotate(-45deg);
+        }
+
+        /* 滑动容器 */
+        .slide-wrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background-color: #f9f7f3;
+        }
+
+        /* 左右滑动状态 */
+        .page.prev {
+            transform: translateX(-100%);
+        }
+        .page.curr {
+            transform: translateX(0);
+        }
+        .page.next {
+            transform: translateX(100%);
+        }
+
+        .tshirt-container {
+            position: relative;
+            width: 80%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1.2;
+        }
+
+        .tshirt {
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .face {
+            position: absolute;
+            top: 35%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            cursor: move;
+            user-select: none;
+            transition: transform 0.2s ease;
+        }
+
+        .face .eye {
+            width: 12px;
+            height: 12px;
+            background-color: #c8a2c8;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 4px;
+        }
+
+        .face .mouth {
+            width: 30px;
+            height: 6px;
+            background-color: #c8a2c8;
+            margin: 8px auto 0;
+            border-radius: 2px;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 300px;
+        }
+
+        .control-row {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .color-picker-container label,
+        .scale-container label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #colorPicker {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+        }
+
+        #scaleSlider {
+            width: 160px;
+            cursor: pointer;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: white;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            z-index: 99;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .nav-item.active {
+            color: #000;
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+        }
+
+        .preview-tshirt {
+            width: 80%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1.2;
+            background-color: white;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .preview-face {
+            position: absolute;
+            top: 35%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease;
+        }
+
+        .preview-face .eye {
+            width: 12px;
+            height: 12px;
+            background-color: #c8a2c8;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 4px;
+        }
+
+        .preview-face .mouth {
+            width: 30px;
+            height: 6px;
+            background-color: #c8a2c8;
+            margin: 8px auto 0;
+            border-radius: 2px;
+        }
+
+        .order-container {
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .order-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .order-info {
+            margin-bottom: 30px;
+        }
+
+        .order-info p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .order-info .price {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            margin-top: 15px;
+        }
+
+        .order-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .order-btn:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            .page-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Acne Studios</h1>
+    </div>
+
+    <div class="page-title">
+        设计-预览-订单
+        <div class="search-icon"></div>
+    </div>
+
+    <div class="slide-wrap">
+        <div class="page curr" id="designPage">
+            <div class="tshirt-container">
+                <div class="tshirt">
+                    <svg viewBox="0 0 500 600" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M150 150 L100 200 L50 250 L50 350 L100 400 L150 350 L150 500 L350 500 L350 350 L400 400 L450 350 L450 250 L400 200 L350 150 L300 120 L250 100 L200 120 Z" fill="white" stroke="#eee" stroke-width="2"/>
+                        <path d="M200 120 Q250 140 300 120" fill="none" stroke="#eee" stroke-width="2"/>
+                    </svg>
+                    <div class="face" id="draggableFace">
+                        <div class="eyes">
+                            <div class="eye" id="eye1"></div>
+                            <div class="eye" id="eye2"></div>
+                        </div>
+                        <div class="mouth" id="mouth"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="control-row color-picker-container">
+                    <label for="colorPicker">图案颜色</label>
+                    <input type="color" id="colorPicker" value="#c8a2c8">
+                </div>
+                <div class="control-row scale-container">
+                    <label for="scaleSlider">图案大小</label>
+                    <input type="range" id="scaleSlider" min="0.5" max="2" step="0.1" value="1">
+                </div>
+                <p style="font-size: 12px; color: #999;">💡 拖动笑脸改位置、滑块调大小</p>
+            </div>
+        </div>
+
+        <div class="page next" id="previewPage">
+            <div class="preview-tshirt">
+                <svg viewBox="0 0 500 600" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M150 150 L100 200 L50 250 L50 350 L100 400 L150 350 L150 500 L350 500 L350 350 L400 400 L450 350 L450 250 L400 200 L350 150 L300 120 L250 100 L200 120 Z" fill="white" stroke="#eee" stroke-width="2"/>
+                    <path d="M200 120 Q250 140 300 120" fill="none" stroke="#eee" stroke-width="2"/>
+                </svg>
+                <div class="preview-face" id="previewFace">
+                    <div class="eyes">
+                        <div class="eye" id="previewEye1"></div>
+                        <div class="eye" id="previewEye2"></div>
+                    </div>
+                    <div class="mouth" id="previewMouth"></div>
+                </div>
+            </div>
+            <p style="margin-top: 20px; color: #666;">你的自定义T恤预览</p>
+        </div>
+
+        <div class="page next" id="orderPage">
+            <div class="order-container">
+                <h2 class="order-title">订单确认</h2>
+                <div class="order-info">
+                    <p>商品：Acne Studios 自定义T恤</p>
+                    <p>图案：笑脸图案（可定制颜色/位置/大小）</p>
+                    <p>尺码：M（可在下单时修改）</p>
+                    <p class="price">价格：¥2200</p>
+                </div>
+                <button class="order-btn" id="orderBtn">立即订购</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" data-id="0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <path d="M3 6h18"/>
+            </svg>
+            <span>设计</span>
+        </div>
+        <div class="nav-item" data-id="1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                <line x1="9" y1="9" x2="9.01" y2="9"/>
+                <line x1="15" y1="9" x2="15.01" y2="9"/>
+            </svg>
+            <span>预览</span>
+        </div>
+        <div class="nav-item" data-id="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>订单</span>
+        </div>
+    </div>
+
+    <script>
+        const pageList = ['designPage','previewPage','orderPage'];
+        let currentIdx = 0;
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+
+        // 初始化页面位置
+        function resetPagePos() {
+            pages.forEach((page,idx)=>{
+                page.classList.remove('curr','prev','next');
+                if(idx === currentIdx){
+                    page.classList.add('curr');
+                }else if(idx < currentIdx){
+                    page.classList.add('prev');
+                }else{
+                    page.classList.add('next');
+                }
+            });
+        }
+
+        // 切换页面
+        function switchPage(idx){
+            if(idx === currentIdx) return;
+            currentIdx = idx;
+            navItems.forEach((item,i)=>{
+                item.classList.toggle('active',i===currentIdx);
+            });
+            resetPagePos();
+            if(currentIdx === 1) updatePreview();
+        }
+
+        navItems.forEach((item,idx)=>{
+            item.addEventListener('click',()=>switchPage(idx));
+        });
+
+        // 颜色
+        const colorPicker = document.getElementById('colorPicker');
+        const eye1 = document.getElementById('eye1');
+        const eye2 = document.getElementById('eye2');
+        const mouth = document.getElementById('mouth');
+        const previewEye1 = document.getElementById('previewEye1');
+        const previewEye2 = document.getElementById('previewEye2');
+        const previewMouth = document.getElementById('previewMouth');
+
+        colorPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            eye1.style.backgroundColor = color;
+            eye2.style.backgroundColor = color;
+            mouth.style.backgroundColor = color;
+            previewEye1.style.backgroundColor = color;
+            previewEye2.style.backgroundColor = color;
+            previewMouth.style.backgroundColor = color;
+        });
+
+        // 缩放
+        const scaleSlider = document.getElementById('scaleSlider');
+        const draggableFace = document.getElementById('draggableFace');
+        const previewFace = document.getElementById('previewFace');
+        let currentScale = 1;
+
+        scaleSlider.addEventListener('input', (e) => {
+            currentScale = parseFloat(e.target.value);
+            draggableFace.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
+            previewFace.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
+        });
+
+        // 拖拽
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        draggableFace.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - draggableFace.offsetLeft;
+            offsetY = e.clientY - draggableFace.offsetTop;
+            draggableFace.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const container = document.querySelector('.tshirt-container');
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+                newLeft = Math.max(0, newLeft);
+                newTop = Math.max(0, newTop);
+                draggableFace.style.left = newLeft + 'px';
+                draggableFace.style.top = newTop + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            draggableFace.style.cursor = 'move';
+        });
+
+        // 同步预览
+        function updatePreview() {
+            const container = document.querySelector('.tshirt-container');
+            const leftPercent = (draggableFace.offsetLeft / container.offsetWidth) * 100;
+            const topPercent = (draggableFace.offsetTop / container.offsetHeight) * 100;
+            previewFace.style.left = leftPercent + '%';
+            previewFace.style.top = topPercent + '%';
+            previewFace.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
+        }
+
+        // 订购按钮
+        const orderBtn = document.getElementById('orderBtn');
+        orderBtn.addEventListener('click', () => {
+            orderBtn.textContent = '订购成功！';
+            orderBtn.style.backgroundColor = '#4CAF50';
+            setTimeout(() => {
+                orderBtn.textContent = '立即订购';
+                orderBtn.style.backgroundColor = '#000';
+                switchPage(0);
+            }, 2000);
+        });
+
+        resetPagePos();
+    </script>
+</body>
+</html>
